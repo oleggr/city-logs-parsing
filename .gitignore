@@ -2,8 +2,8 @@
 venv/
 
 **/tmp.py
-#**/*.docx
-#journals/
+**/*.docx
+journals/
 
 .DS_Store
 **/.DS_Store
