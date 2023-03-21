@@ -3,14 +3,16 @@ from os import listdir
 from os.path import isfile, join
 import typing
 
-import models
-from db_controller import DbController
+from . import models
+from .db_controller import DbController
 
 
 class DefaultParser:
     files_dir: str
     files: typing.List[str]
     events: typing.Dict[str, typing.Any]
+
+    DEFAULT_NAME = 'default'
 
     def __init__(self, files_dir: str):
         if not files_dir[-1] == '/':
