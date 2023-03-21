@@ -5,7 +5,7 @@ import models
 
 class DbController:
     DB_PARAMS: typing.Dict[str, str]
-    db_filename: str = 'sqlite.db'
+    db_filename: str = '../sqlite.db'
 
     def __init__(self):
         self.DB_PARAMS = {

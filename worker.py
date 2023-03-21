@@ -1,6 +1,6 @@
 import argparse
 import logging
-from v1_parser import V1Parser
+from parse_lib.v1_parser import V1Parser
 
 parser_mapping = {
     'v1': V1Parser

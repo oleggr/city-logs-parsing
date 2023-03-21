@@ -4,6 +4,7 @@ venv/
 **/tmp.py
 **/*.docx
 journals/
+**/*.db
 
 .DS_Store
 **/.DS_Store
