@@ -5,6 +5,7 @@ venv/
 **/*.docx
 journals/
 **/*.db
+**/*.txt
 
 .DS_Store
 **/.DS_Store
