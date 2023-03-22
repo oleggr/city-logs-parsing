@@ -22,6 +22,7 @@ class V1Parser(DefaultParser):
     def read_file(self, file_path: str) -> Journal:
         logger.info(f'Start parsing file: {file_path}')
 
+        # receive data from file
         data = docx2txt.process(file_path)
 
         journal = Journal(
@@ -33,6 +34,7 @@ class V1Parser(DefaultParser):
         curr_date = None
 
         for line in data.split('\n'):
+            # read first line in journal
             if journal.name == self.DEFAULT_NAME:
                 journal.name = line
                 continue
@@ -40,10 +42,14 @@ class V1Parser(DefaultParser):
             if not line:
                 continue
 
+            # check if date in line,
+            # so we can start parsing of new day
             regexp = re.compile(r'[0-9]*\.[0-9]*\.[0-9]*')
             match = regexp.search(line)
 
             if match:
+                # if day class already exist
+                # we must append it to journal
                 if day:
                     journal.days.append(day)
 
