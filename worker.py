@@ -1,10 +1,8 @@
 import argparse
 import logging
 from parse_lib.v1_parser import V1Parser
+from parse_lib.v2_parser import V2Parser
 
-parser_mapping = {
-    'v1': V1Parser
-}
 
 logging.basicConfig(
     level=logging.DEBUG,
@@ -12,6 +10,11 @@ logging.basicConfig(
     datefmt='%Y-%m-%d %H:%M:%S'
 )
 logger = logging.getLogger('worker')
+
+parser_mapping = {
+    'v1': V1Parser,
+    'v2': V2Parser,
+}
 
 
 def run_parsing(version: str, files_dir: str):

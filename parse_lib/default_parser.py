@@ -1,10 +1,19 @@
 from abc import abstractmethod
+import logging
 from os import listdir
 from os.path import isfile, join
 import typing
 
 from . import models
 from .db_controller import DbController
+
+
+logging.basicConfig(
+    level=logging.DEBUG,
+    format='%(levelname)s :: %(asctime)s :: %(message)s',
+    datefmt='%Y-%m-%d %H:%M:%S'
+)
+logger = logging.getLogger('worker')
 
 
 class DefaultParser:
@@ -28,6 +37,9 @@ class DefaultParser:
 
     def run(self):
         self.get_files()
+
+        if not self.files:
+            logger.warning('Files dir is empty')
 
         for file in self.files:
             file_path = self.files_dir + file

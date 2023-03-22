@@ -1,15 +1,25 @@
-import json
 import docx2txt
+import logging
 import re
 
 from .default_parser import DefaultParser
 from .models import Journal, Day, Event
 
 
+logging.basicConfig(
+    level=logging.DEBUG,
+    format='%(levelname)s :: %(asctime)s :: %(message)s',
+    datefmt='%Y-%m-%d %H:%M:%S'
+)
+logger = logging.getLogger('v1_parser')
+
+
 class V1Parser(DefaultParser):
     DEFAULT_NAME = 'default_v1'
 
     def read_file(self, file_path: str) -> Journal:
+        logger.info(f'Start parsing file: {file_path}')
+
         data = docx2txt.process(file_path)
 
         journal = Journal(name=self.DEFAULT_NAME, days=[])
@@ -24,7 +34,6 @@ class V1Parser(DefaultParser):
             if not line:
                 continue
 
-            # result = re.match(r'[0-9]*\.[0-9]*\.[0-9]*', line)
             regexp = re.compile(r'[0-9]*\.[0-9]*\.[0-9]*')
             match = regexp.search(line)
 
@@ -34,14 +43,25 @@ class V1Parser(DefaultParser):
 
                 curr_date = line.split(' ')[0].strip()
                 day = Day(date=curr_date, events=[])
-                line = line[match.end():].strip()
+                line = self._clear_line(match.end(), line)
 
             day.events.append(
                 Event(date=curr_date, address='', text=line)
             )
 
+        if not journal.days:
+            logger.warning(f'Journal is empty')
+
         return journal
 
-    def check_is_header(self, text: str):
+    def _clear_line(self, pos_to_cut: int, line: str):
+        line = line[pos_to_cut:].strip()
+
+        if line[0] == '–' or line[0] == '-':
+            return line[1:].strip()
+
+        return line
+
+    def _check_is_header(self, text: str):
         result = re.match(r'Журнал [0-9]*', text)
         return True if result else False

@@ -6,5 +6,8 @@ all:
 	@echo "make parse    - Run parsing"
 	@exit 0
 
-parse:
-	python3 worker.py --parse v1
+parse_v1:
+	python3 worker.py --parse v1 --files_dir=journals/v1/
+
+parse_v2:
+	python3 worker.py --parse v2 --files_dir=journals/v2/2020/Август/
