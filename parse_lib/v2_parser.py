@@ -1,5 +1,7 @@
 import docx2txt
+from docx import Document
 import logging
+import os
 import re
 
 from .default_parser import DefaultParser
@@ -15,16 +17,25 @@ logger = logging.getLogger('v2_parser')
 
 
 class V2Parser(DefaultParser):
-    DEFAULT_NAME = 'default_v1'
+    VERSION = 'v2'
+    DEFAULT_NAME = 'default_v2'
+    FILE_FORMAT = 'docx'
 
     def read_file(self, file_path: str) -> Journal:
         logger.info(f'Start parsing file: {file_path}')
 
-        data = docx2txt.process(file_path)
+        word_doc = Document(file_path)
 
-        print(data)
+        # data = docx2txt.process(file_path)
+        for table in word_doc.tables:
+            pass
 
-        journal = Journal(name=self.DEFAULT_NAME, days=[])
+        journal = Journal(
+            name=self.DEFAULT_NAME,
+            days=[],
+            version=self.VERSION
+        )
+
         # day = None
         # curr_date = None
         #

@@ -1,1 +1,2 @@
 docx2txt
+python-docx

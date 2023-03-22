@@ -10,4 +10,4 @@ parse_v1:
 	python3 worker.py --parse v1 --files_dir=journals/v1/
 
 parse_v2:
-	python3 worker.py --parse v2 --files_dir=journals/v2/2020/Август/
+	python3 worker.py --parse v2 --files_dir=journals/v2/

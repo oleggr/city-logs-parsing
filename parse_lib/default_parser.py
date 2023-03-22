@@ -1,7 +1,6 @@
 from abc import abstractmethod
 import logging
-from os import listdir
-from os.path import isfile, join
+import os
 import typing
 
 from . import models
@@ -21,7 +20,9 @@ class DefaultParser:
     files: typing.List[str]
     events: typing.Dict[str, typing.Any]
 
+    VERSION = 'default'
     DEFAULT_NAME = 'default'
+    FILE_FORMAT = 'docx'
 
     def __init__(self, files_dir: str):
         if not files_dir[-1] == '/':
@@ -30,10 +31,12 @@ class DefaultParser:
         self.files_dir = files_dir
 
     def get_files(self):
-        self.files = [
-            f for f in listdir(self.files_dir)
-            if isfile(join(self.files_dir, f)) and f[-4:] == 'docx'
-        ]
+        self.files = []
+
+        for path, subdirs, files in os.walk(self.files_dir):
+            for name in files:
+                if name[-4:] == self.FILE_FORMAT:
+                    self.files.append(os.path.join(path, name))
 
     def run(self):
         self.get_files()
@@ -41,8 +44,7 @@ class DefaultParser:
         if not self.files:
             logger.warning('Files dir is empty')
 
-        for file in self.files:
-            file_path = self.files_dir + file
+        for file_path in self.files:
             journal = self.read_file(file_path)
             self.write_journal_to_db(journal)
 

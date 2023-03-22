@@ -30,13 +30,21 @@ class DbController:
 
             for day in journal.days:
                 for event in day.events:
-                    self._write_event(conn, event, journal_id)
+                    self._write_event(conn, event, journal.version, journal_id)
 
         conn.close()
 
-    def _write_event(self, conn, event: models.Event, journal_id: int):
-        sql = """INSERT INTO events (`date`, `address`, `text`, `journal_id`) VALUES (?,?,?,?);"""
-        event_to_write = (event.date, event.address, event.text, journal_id)
+    def _write_event(self, conn, event: models.Event, version: str, journal_id: int):
+        sql = """
+        INSERT INTO events (
+            `date`, 
+            `address`, 
+            `text`, 
+            `version`, 
+            `journal_id`
+        ) VALUES (?,?,?,?,?);
+        """
+        event_to_write = (event.date, event.address, event.text, version, journal_id)
 
         cur = conn.cursor()
         cur.execute(sql, event_to_write)
@@ -45,7 +53,11 @@ class DbController:
         return cur.lastrowid
 
     def _write_journal(self, conn, journal_name: str):
-        sql = f"""INSERT OR REPLACE INTO journals (`name`) VALUES ('{journal_name}');"""
+        sql = f"""
+        INSERT OR REPLACE INTO journals (
+            `name`
+        ) VALUES ('{journal_name}');
+        """
         cur = conn.cursor()
         cur.execute(sql)
         conn.commit()
@@ -63,6 +75,7 @@ class DbController:
                 `date`          TEXT,
                 `address`       TEXT,
                 `text`          TEXT,
+                `version`       TEXT,
                 `journal_id`    INTEGER,
                 `created_at`    DATETIME DEFAULT current_timestamp
             );
@@ -72,6 +85,7 @@ class DbController:
             sql = """
             CREATE TABLE IF NOT EXISTS journals (
                 `id`            INTEGER PRIMARY KEY,
+                `version`       TEXT,
                 `name`          TEXT UNIQUE,
                 `created_at`    DATETIME DEFAULT current_timestamp
             );
