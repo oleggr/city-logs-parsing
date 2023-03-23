@@ -49,6 +49,11 @@ class MCHSDep:
 
 
 @dataclass
+class Weather:
+    info: str
+
+
+@dataclass
 class Day:
     date: str
     events: List[Event]
@@ -57,6 +62,7 @@ class Day:
     police_dep: PoliceDep = None
     ambulance_dep: AmbulanceDep = None
     mchs_dep: MCHSDep = None
+    weather: Weather = None
     notes: str = ''
     duty_person: str = ''
 

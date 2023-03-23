@@ -1,3 +1,5 @@
+import typing
+
 import docx2txt
 from docx import Document
 import logging
@@ -36,6 +38,12 @@ class V2Parser(DefaultParser):
             version=self.VERSION
         )
 
+        day = Day(date='', events=[])
+
+        self._parse_notes(day, word_doc)
+
+        print(day)
+
         # day = None
         # curr_date = None
         #
@@ -67,14 +75,18 @@ class V2Parser(DefaultParser):
 
         return journal
 
-    def _clear_line(self, pos_to_cut: int, line: str):
-        line = line[pos_to_cut:].strip()
+    def _parse_notes(self, day: Day, data: Document):
+        lines = [para.text for para in data.paragraphs]
 
-        if line[0] == '–' or line[0] == '-':
-            return line[1:].strip()
+        for line in lines:
+            # fill person on duty
+            if 'дежурный' in line:
+                duty_person = line.split()[-2:]
+                day.duty_person = ' '.join(duty_person)
 
-        return line
+            # fill date
+            if re.match(r'.*[0-9]*\.[0-9]*\.[0-9]*', line) and 'На' not in line:
+                day.date = line.split()[2]
 
-    def _check_is_header(self, text: str):
-        result = re.match(r'Журнал [0-9]*', text)
-        return True if result else False
+        # fill notes
+        day.notes = lines[-2].strip()
