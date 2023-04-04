@@ -46,6 +46,7 @@ class DefaultParser:
 
         for file_path in self.files:
             journal = self.read_file(file_path)
+            print(journal)
             self.write_journal_to_db(journal)
 
     @abstractmethod

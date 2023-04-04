@@ -1,9 +1,10 @@
 import typing
 import sqlite3
 from . import models
+from .db_queries import DbQueriesMixin
 
 
-class DbController:
+class DbController(DbQueriesMixin):
     DB_PARAMS: typing.Dict[str, str]
     db_filename: str = 'journals.db'
 
@@ -26,40 +27,67 @@ class DbController:
     def write_journal(self, journal: models.Journal):
         conn = self._get_connection()
         with conn:
-            journal_id = self._write_journal(conn, journal.name)
+            journal_id = self._write_journal(conn, journal)
 
             for day in journal.days:
                 for event in day.events:
                     self._write_event(conn, event, journal.version, journal_id)
 
+            self._write_fire_data(conn, day, journal_id)
+            self._write_police_data(conn, day, journal_id)
+            self._write_mchs_data(conn, day, journal_id)
+            self._write_weather_data(conn, day, journal_id)
+
         conn.close()
+
+    def _write_journal(self, conn, journal: models.Journal):
+        sql = """
+        INSERT OR REPLACE INTO journals (
+            `version`,
+            `notes`,
+            `duty_person`,
+            `name`
+        ) VALUES (?,?,?,?);
+        """
+        journal_to_write = (
+            journal.version,
+            journal.notes,
+            journal.duty_person,
+            journal.name,
+        )
+
+        cur = conn.cursor()
+        cur.execute(sql, journal_to_write)
+        conn.commit()
+
+        return cur.lastrowid
 
     def _write_event(self, conn, event: models.Event, version: str, journal_id: int):
         sql = """
         INSERT INTO events (
             `date`, 
             `address`, 
-            `text`, 
+            `text`,
+            `datetime`,
+            `organization`,
+            `injured_fio`,
             `version`, 
             `journal_id`
-        ) VALUES (?,?,?,?,?);
+        ) VALUES (?,?,?,?,?,?,?,?);
         """
-        event_to_write = (event.date, event.address, event.text, version, journal_id)
+        event_to_write = (
+            event.date,
+            event.address,
+            event.text,
+            event.datetime,
+            event.organization,
+            event.injured_fio,
+            version,
+            journal_id
+        )
 
         cur = conn.cursor()
         cur.execute(sql, event_to_write)
-        conn.commit()
-
-        return cur.lastrowid
-
-    def _write_journal(self, conn, journal_name: str):
-        sql = f"""
-        INSERT OR REPLACE INTO journals (
-            `name`
-        ) VALUES ('{journal_name}');
-        """
-        cur = conn.cursor()
-        cur.execute(sql)
         conn.commit()
 
         return cur.lastrowid
@@ -75,6 +103,9 @@ class DbController:
                 `date`          TEXT,
                 `address`       TEXT,
                 `text`          TEXT,
+                `datetime`      TEXT,
+                `organization`  TEXT,    
+                `injured_fio`   TEXT,    
                 `version`       TEXT,
                 `journal_id`    INTEGER,
                 `created_at`    DATETIME DEFAULT current_timestamp
@@ -86,8 +117,65 @@ class DbController:
             CREATE TABLE IF NOT EXISTS journals (
                 `id`            INTEGER PRIMARY KEY,
                 `version`       TEXT,
+                `notes`         TEXT,
+                `duty_person`   TEXT,
                 `name`          TEXT UNIQUE,
                 `created_at`    DATETIME DEFAULT current_timestamp
+            );
+            """
+            cur.execute(sql)
+
+            sql = """
+            CREATE TABLE IF NOT EXISTS fire_data (
+                `id`                INTEGER PRIMARY KEY,
+                `date`              TEXT,
+                `fires_num`         INTEGER,          
+                `dead`              INTEGER,  
+                `injured`           INTEGER,
+                `journal_id`        INTEGER,        
+                `created_at`        DATETIME DEFAULT current_timestamp
+            );
+            """
+            cur.execute(sql)
+
+            sql = """
+            CREATE TABLE IF NOT EXISTS police_data (
+                `id`                INTEGER PRIMARY KEY,
+                `date`              TEXT,
+                `incidents_num`     TEXT,              
+                `notes`             TEXT,      
+                `journal_id`        INTEGER,        
+                `created_at`        DATETIME DEFAULT current_timestamp
+            );
+            """
+            cur.execute(sql)
+
+            sql = """
+            CREATE TABLE IF NOT EXISTS mchs_data (
+                `id`                        INTEGER PRIMARY KEY,
+                `date`                      TEXT,
+                `tourist_groups_num`        TEXT,
+                `tourist_groups_persons`    TEXT,
+                `dtp`                       TEXT,        
+                `search_jobs`               TEXT,                
+                `save_jobs`                 TEXT,            
+                `another`                   TEXT,    
+                `journal_id`                INTEGER,        
+                `created_at`                DATETIME DEFAULT current_timestamp
+            );
+            """
+            cur.execute(sql)
+
+            sql = """
+            CREATE TABLE IF NOT EXISTS weather (
+                `id`                    INTEGER PRIMARY KEY,
+                `date`                  TEXT,
+                `place`                 TEXT,  
+                `external_temp`         TEXT,             
+                `in_out_tube_temp`      TEXT,              
+                `in_out_tube_pressure`  TEXT,                  
+                `journal_id`            INTEGER,
+                `created_at`            DATETIME DEFAULT current_timestamp
             );
             """
             cur.execute(sql)

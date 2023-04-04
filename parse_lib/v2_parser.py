@@ -1,13 +1,9 @@
-import typing
-
-import docx2txt
 from docx import Document
 import logging
-import os
 import re
 
 from .default_parser import DefaultParser
-from .models import Journal, Day, Event
+from .models import Journal, Day, Event, MCHSDep, TouristGroups, FireDep, PoliceDep, Weather
 
 
 logging.basicConfig(
@@ -28,65 +24,112 @@ class V2Parser(DefaultParser):
 
         word_doc = Document(file_path)
 
-        # data = docx2txt.process(file_path)
-        for table in word_doc.tables:
-            pass
-
         journal = Journal(
-            name=self.DEFAULT_NAME,
+            name=file_path.split('/')[-1],
             days=[],
             version=self.VERSION
         )
+        day = Day(date='', events=[], weather=[])
 
-        day = Day(date='', events=[])
+        self._parse_notes(day, journal, word_doc)
 
-        self._parse_notes(day, word_doc)
+        # tables_mapping = {
+        #     0: None,
+        #     1: 'events',
+        #     2: 'fire',
+        #     3: 'police',
+        #     4: 'mchs',
+        #     5: 'temp',
+        # }
+        curr_table = 0
 
-        print(day)
+        # data = docx2txt.process(file_path)
+        for table in word_doc.tables:
+            print('\n\n== TABLE ===========================')
 
-        # day = None
-        # curr_date = None
-        #
-        # for line in data.split('\n'):
-        #     if journal.name == self.DEFAULT_NAME:
-        #         journal.name = line
-        #         continue
-        #
-        #     if not line:
-        #         continue
-        #
-        #     regexp = re.compile(r'[0-9]*\.[0-9]*\.[0-9]*')
-        #     match = regexp.search(line)
-        #
-        #     if match:
-        #         if day:
-        #             journal.days.append(day)
-        #
-        #         curr_date = line.split(' ')[0].strip()
-        #         day = Day(date=curr_date, events=[])
-        #         line = self._clear_line(match.end(), line)
-        #
-        #     day.events.append(
-        #         Event(date=curr_date, address='', text=line)
-        #     )
-        #
-        # if not journal.days:
-        #     logger.warning(f'Journal is empty')
+            for i, row in enumerate(table.rows):
+                print(f'-- ROW  {i} -----------------------')
+
+                text = tuple(cell.text for cell in row.cells)
+
+                # detect table in file
+                if i == 0 and text[0] == '№ п/п':
+                    curr_table = 1
+                elif i == 0 and 'Пожарная' in text[0]:
+                    curr_table = 2
+                elif i == 0 and 'Полиция' in text[0]:
+                    curr_table = 3
+                elif i == 0 and 'МЧС' in text[0]:
+                    curr_table = 4
+                elif i == 0 and 'температура' in text[2]:
+                    curr_table = 5
+
+                # resolve event from table
+                if i >= 1 and curr_table == 1:
+                    datetime = [i.strip() for i in text[1].split('\n')]
+
+                    day.events.append(Event(
+                        date=day.date,
+                        text=text[4].strip(),
+                        address='',
+                        datetime=' '.join(datetime),
+                        organization=text[2].strip(),
+                        injured_fio=text[3].strip(),
+                    ))
+
+                # resolve FireDep data from table
+                if i == 1 and curr_table == 2:
+                    day.fire_dep = FireDep(
+                        fires_num=int(text[1]),
+                        dead=int(text[3]),
+                        injured=int(text[4]),
+                    )
+
+                # resolve PoliceDep data from table
+                if i == 1 and curr_table == 3:
+                    day.police_dep = PoliceDep(
+                        incidents_num=text[1].strip(),
+                        notes=text[2].strip(),
+                    )
+
+                # resolve MCHS data from table
+                if i == 2 and curr_table == 4:
+                    day.mchs_dep = MCHSDep(
+                        tourist_groups=TouristGroups(
+                            num=text[1].strip(),
+                            persons=text[2].strip(),
+                        ),
+                        dtp=text[3].strip(),
+                        search_jobs=text[4].strip(),
+                        save_jobs=text[5].strip(),
+                        another=text[6].strip(),
+                    )
+
+                # resolve MCHS data from table
+                if i >= 1 and curr_table == 5:
+                    day.weather.append(Weather(
+                        place=text[1].strip(),
+                        external_temp=text[2].strip(),
+                        in_out_tube_temp=text[3].strip(),
+                        in_out_tube_pressure=text[4].strip(),
+                    ))
+
+        journal.days.append(day)
 
         return journal
 
-    def _parse_notes(self, day: Day, data: Document):
+    def _parse_notes(self, day: Day, journal: Journal, data: Document):
         lines = [para.text for para in data.paragraphs]
 
         for line in lines:
             # fill person on duty
             if 'дежурный' in line:
                 duty_person = line.split()[-2:]
-                day.duty_person = ' '.join(duty_person)
+                journal.duty_person = ' '.join(duty_person)
 
             # fill date
             if re.match(r'.*[0-9]*\.[0-9]*\.[0-9]*', line) and 'На' not in line:
                 day.date = line.split()[2]
 
         # fill notes
-        day.notes = lines[-2].strip()
+        journal.notes = lines[-2].strip()

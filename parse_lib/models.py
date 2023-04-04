@@ -1,3 +1,4 @@
+import typing
 from typing import List, Union
 from dataclasses import dataclass
 
@@ -50,7 +51,10 @@ class MCHSDep:
 
 @dataclass
 class Weather:
-    info: str
+    place: str = ''
+    external_temp: str = ''
+    in_out_tube_temp: str = ''
+    in_out_tube_pressure: str = ''
 
 
 @dataclass
@@ -62,9 +66,7 @@ class Day:
     police_dep: PoliceDep = None
     ambulance_dep: AmbulanceDep = None
     mchs_dep: MCHSDep = None
-    weather: Weather = None
-    notes: str = ''
-    duty_person: str = ''
+    weather: typing.List[Weather] = None
 
 
 @dataclass
@@ -72,3 +74,5 @@ class Journal:
     name: str
     days: List[Union[Day]]
     version: str = 'default'
+    notes: str = ''
+    duty_person: str = ''
