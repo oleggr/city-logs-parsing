@@ -73,8 +73,29 @@ class V1Parser(DefaultParser):
         """
         handle 1.11.18 to 01.11.2018
         """
-        date = line.split(' ')[0].strip()
-        day, month, year = date.split('.')
+        date = None
+
+        string_parts = line.split(' ')
+        for string_part in string_parts:
+            regexp = re.compile(r'[0-9]*\.[0-9]*\.[0-9]*')
+            match = regexp.search(string_part)
+            if match:
+                date = string_part
+                break
+
+        if not date:
+            logger.error(f'Date not found in line {line}')
+            raise Exception('Not found date in line.')
+
+        try:
+            date_parts = date.split('.')
+
+            day = date_parts[0].strip()
+            month = date_parts[1].strip()
+            year = date_parts[2].strip()
+        except Exception as exc:
+            logger.error(f'Error while parsing date from line {line}')
+            raise exc
 
         if len(day) == 1:
             day = '0' + day

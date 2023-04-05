@@ -45,11 +45,7 @@ class V2Parser(DefaultParser):
 
         # data = docx2txt.process(file_path)
         for table in word_doc.tables:
-            print('\n\n== TABLE ===========================')
-
             for i, row in enumerate(table.rows):
-                print(f'-- ROW  {i} -----------------------')
-
                 text = tuple(cell.text for cell in row.cells)
 
                 # detect table in file
