@@ -129,9 +129,9 @@ class DbController(DbQueriesMixin):
             CREATE TABLE IF NOT EXISTS fire_data (
                 `id`                INTEGER PRIMARY KEY,
                 `date`              TEXT,
-                `fires_num`         INTEGER,          
-                `dead`              INTEGER,  
-                `injured`           INTEGER,
+                `fires_num`         TEXT,          
+                `dead`              TEXT,  
+                `injured`           TEXT,
                 `journal_id`        INTEGER,        
                 `created_at`        DATETIME DEFAULT current_timestamp
             );

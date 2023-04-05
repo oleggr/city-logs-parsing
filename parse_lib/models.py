@@ -16,9 +16,9 @@ class Event:
 
 @dataclass
 class FireDep:
-    fires_num: int = 0
-    dead: int = 0
-    injured: int = 0
+    fires_num: str = ''
+    dead: str = ''
+    injured: str = ''
 
 
 @dataclass

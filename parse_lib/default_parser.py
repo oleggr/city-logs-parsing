@@ -24,19 +24,27 @@ class DefaultParser:
     DEFAULT_NAME = 'default'
     FILE_FORMAT = 'docx'
 
-    def __init__(self, files_dir: str):
+    def __init__(self, files_dir: str, file_path: str = ''):
         if not files_dir[-1] == '/':
             files_dir += '/'
 
         self.files_dir = files_dir
+        self.file_path = file_path
 
     def get_files(self):
         self.files = []
+
+        if self.file_path:
+            logger.info(f'Skip folder scan. Handle file {self.file_path}')
+            self.files.append(self.file_path)
+            return
 
         for path, subdirs, files in os.walk(self.files_dir):
             for name in files:
                 if name[-4:] == self.FILE_FORMAT:
                     self.files.append(os.path.join(path, name))
+
+        self.files.sort()
 
     def run(self):
         self.get_files()
@@ -46,6 +54,13 @@ class DefaultParser:
 
         for file_path in self.files:
             journal = self.read_file(file_path)
+
+            if not journal.days:
+                logger.warning(
+                    f'Journal {journal.name} is empty. Skip writing.'
+                )
+                continue
+
             self.write_journal_to_db(journal)
 
     @abstractmethod

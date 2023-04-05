@@ -17,7 +17,7 @@ parser_mapping = {
 }
 
 
-def run_parsing(version: str, files_dir: str):
+def run_parsing(version: str, files_dir: str, file_path: str = ''):
     parser_class = parser_mapping.get(version)
     if parser_class is None:
         logger.warning(f'Parser with version {version} not exist')
@@ -25,7 +25,7 @@ def run_parsing(version: str, files_dir: str):
 
     logger.info(f'Start parsing with version {version}')
 
-    parser = parser_class(files_dir=files_dir)
+    parser = parser_class(files_dir=files_dir, file_path=file_path)
     parser.run()
 
 
@@ -33,8 +33,9 @@ if __name__ == '__main__':
     cli_parser = argparse.ArgumentParser(description='Cli interface for city journal parsing')
     cli_parser.add_argument("--parse")
     cli_parser.add_argument("--files_dir", default='journals/')
+    cli_parser.add_argument("--file_path", default='')
 
     args = cli_parser.parse_args()
 
     if args.parse:
-        run_parsing(args.parse, args.files_dir)
+        run_parsing(args.parse, args.files_dir, args.file_path)
