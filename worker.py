@@ -1,5 +1,7 @@
 import argparse
 import logging
+import time
+
 from parse_lib.v1_parser import V1Parser
 from parse_lib.v2_parser import V2Parser
 
@@ -37,5 +39,10 @@ if __name__ == '__main__':
 
     args = cli_parser.parse_args()
 
+    start_time = time.time()
     if args.parse:
         run_parsing(args.parse, args.files_dir, args.file_path)
+    end_time = time.time()
+    execution_time = round(end_time - start_time, 3)
+
+    logger.info(f'Time of execution: {execution_time}')

@@ -99,53 +99,53 @@ class DbController(DbQueriesMixin):
 
             sql = """
             CREATE TABLE IF NOT EXISTS events (
-                `id`            INTEGER PRIMARY KEY,
-                `date`          TEXT,
-                `address`       TEXT,
-                `text`          TEXT,
-                `datetime`      TEXT,
-                `organization`  TEXT,    
-                `injured_fio`   TEXT,    
-                `version`       TEXT,
-                `journal_id`    INTEGER,
-                `created_at`    DATETIME DEFAULT current_timestamp
+                `id`                        INTEGER PRIMARY KEY,
+                `date`                      DATETIME,
+                `address`                   TEXT,
+                `text`                      TEXT,
+                `datetime`                  TEXT,
+                `organization`              TEXT,    
+                `injured_fio`               TEXT,    
+                `version`                   TEXT,
+                `journal_id`                INTEGER,
+                `created_at`                DATETIME DEFAULT current_timestamp
             );
             """
             cur.execute(sql)
 
             sql = """
             CREATE TABLE IF NOT EXISTS journals (
-                `id`            INTEGER PRIMARY KEY,
-                `version`       TEXT,
-                `notes`         TEXT,
-                `duty_person`   TEXT,
-                `name`          TEXT UNIQUE,
-                `created_at`    DATETIME DEFAULT current_timestamp
+                `id`                        INTEGER PRIMARY KEY,
+                `version`                   TEXT,
+                `notes`                     TEXT,
+                `duty_person`               TEXT,
+                `name`                      TEXT UNIQUE,
+                `created_at`                DATETIME DEFAULT current_timestamp
             );
             """
             cur.execute(sql)
 
             sql = """
             CREATE TABLE IF NOT EXISTS fire_data (
-                `id`                INTEGER PRIMARY KEY,
-                `date`              TEXT,
-                `fires_num`         TEXT,          
-                `dead`              TEXT,  
-                `injured`           TEXT,
-                `journal_id`        INTEGER,        
-                `created_at`        DATETIME DEFAULT current_timestamp
+                `id`                        INTEGER PRIMARY KEY,
+                `date`                      DATETIME,
+                `fires_num`                 TEXT,          
+                `dead`                      TEXT,  
+                `injured`                   TEXT,
+                `journal_id`                INTEGER,        
+                `created_at`                DATETIME DEFAULT current_timestamp
             );
             """
             cur.execute(sql)
 
             sql = """
             CREATE TABLE IF NOT EXISTS police_data (
-                `id`                INTEGER PRIMARY KEY,
-                `date`              TEXT,
-                `incidents_num`     TEXT,              
-                `notes`             TEXT,      
-                `journal_id`        INTEGER,        
-                `created_at`        DATETIME DEFAULT current_timestamp
+                `id`                        INTEGER PRIMARY KEY,
+                `date`                      DATETIME,
+                `incidents_num`             TEXT,              
+                `notes`                     TEXT,      
+                `journal_id`                INTEGER,        
+                `created_at`                DATETIME DEFAULT current_timestamp
             );
             """
             cur.execute(sql)
@@ -153,7 +153,7 @@ class DbController(DbQueriesMixin):
             sql = """
             CREATE TABLE IF NOT EXISTS mchs_data (
                 `id`                        INTEGER PRIMARY KEY,
-                `date`                      TEXT,
+                `date`                      DATETIME,
                 `tourist_groups_num`        TEXT,
                 `tourist_groups_persons`    TEXT,
                 `dtp`                       TEXT,        
@@ -168,14 +168,14 @@ class DbController(DbQueriesMixin):
 
             sql = """
             CREATE TABLE IF NOT EXISTS weather (
-                `id`                    INTEGER PRIMARY KEY,
-                `date`                  TEXT,
-                `place`                 TEXT,  
-                `external_temp`         TEXT,             
-                `in_out_tube_temp`      TEXT,              
-                `in_out_tube_pressure`  TEXT,                  
-                `journal_id`            INTEGER,
-                `created_at`            DATETIME DEFAULT current_timestamp
+                `id`                        INTEGER PRIMARY KEY,
+                `date`                      DATETIME,
+                `place`                     TEXT,  
+                `external_temp`             TEXT,             
+                `in_out_tube_temp`          TEXT,              
+                `in_out_tube_pressure`      TEXT,                  
+                `journal_id`                INTEGER,
+                `created_at`                DATETIME DEFAULT current_timestamp
             );
             """
             cur.execute(sql)

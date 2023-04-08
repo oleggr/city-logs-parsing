@@ -70,9 +70,6 @@ class V1Parser(DefaultParser):
         return journal
 
     def _prepare_date(self, line: str):
-        """
-        handle 1.11.18 to 01.11.2018
-        """
         date = None
 
         string_parts = line.split(' ')
@@ -87,23 +84,7 @@ class V1Parser(DefaultParser):
             logger.error(f'Date not found in line {line}')
             raise Exception('Not found date in line.')
 
-        try:
-            date_parts = date.split('.')
-
-            day = date_parts[0].strip()
-            month = date_parts[1].strip()
-            year = date_parts[2].strip()
-        except Exception as exc:
-            logger.error(f'Error while parsing date from line {line}')
-            raise exc
-
-        if len(day) == 1:
-            day = '0' + day
-
-        if len(year) == 2:
-            year = '20' + year
-
-        return f'{day}.{month}.{year}'
+        return self.transform_date(date)
 
     def _prepare_line(self, pos_to_cut: int, line: str):
         """

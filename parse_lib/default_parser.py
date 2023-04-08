@@ -70,3 +70,27 @@ class DefaultParser:
     def write_journal_to_db(self, journal: models.Journal):
         db = DbController()
         db.write_journal(journal)
+
+    def transform_date(self, date: str):
+        """
+        Transform date from 18.11.2018 to 2018-11-18
+        According to date format YYYY-MM-DD
+        """
+
+        try:
+            date_parts = date.split('.')
+
+            day = date_parts[0].strip()
+            month = date_parts[1].strip()
+            year = date_parts[2].strip()
+        except Exception as exc:
+            logger.error(f'Error while parsing date {date}')
+            raise exc
+
+        if len(day) == 1:
+            day = '0' + day
+
+        if len(year) == 2:
+            year = '20' + year
+
+        return f'{year}-{month}-{day}'
