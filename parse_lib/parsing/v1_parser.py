@@ -3,7 +3,7 @@ import logging
 import re
 
 from .default_parser import DefaultParser
-from .models import Journal, Day, Event
+from parse_lib.models import Journal, Day, Event
 
 
 logging.basicConfig(

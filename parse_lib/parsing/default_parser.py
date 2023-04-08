@@ -3,8 +3,8 @@ import logging
 import os
 import typing
 
-from . import models
-from .db_controller import DbController
+from parse_lib import models
+from parse_lib.db_controller import DbController
 
 
 logging.basicConfig(

@@ -3,8 +3,8 @@ import logging
 import re
 
 from .default_parser import DefaultParser
-from .models import Journal, Day, Event, MCHSDep, TouristGroups, FireDep, PoliceDep, Weather
-from .v2_text_processor import V2TextProcessor
+from .parsing_config import skip_words
+from parse_lib.models import Journal, Day, Event, MCHSDep, TouristGroups, FireDep, PoliceDep, Weather
 
 logging.basicConfig(
     level=logging.DEBUG,
@@ -33,12 +33,6 @@ class V2Parser(DefaultParser):
         MCHS_DEP_TABLE_ID: 'mchs',
         WEATHER_TABLE_ID: 'temp',
     }
-
-    text_processor: V2TextProcessor
-
-    def __init__(self, files_dir: str, file_path: str = ''):
-        super(V2Parser, self).__init__(files_dir, file_path)
-        self.text_processor = V2TextProcessor()
 
     def read_file(self, file_path: str) -> Journal:
         logger.info(f'Start parsing file: {file_path}')
@@ -161,7 +155,7 @@ class V2Parser(DefaultParser):
 
         lower = line.lower()
 
-        for word in self.text_processor.skip_words:
+        for word in skip_words:
             if word in lower:
                 return True
 

@@ -2,8 +2,8 @@ import argparse
 import logging
 import time
 
-from parse_lib.v1_parser import V1Parser
-from parse_lib.v2_parser import V2Parser
+from parse_lib.parsing.v1_parser import V1Parser
+from parse_lib.parsing.v2_parser import V2Parser
 
 
 logging.basicConfig(

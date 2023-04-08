@@ -18,7 +18,6 @@ Logs/
 logs/*
 logs/
 
-**config.py
 Configs/og*
 configs/og*
 
