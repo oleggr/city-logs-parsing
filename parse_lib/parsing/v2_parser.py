@@ -3,7 +3,7 @@ import logging
 import re
 
 from .default_parser import DefaultParser
-from .parsing_config import skip_words
+from .parsing_config import skip_words, enable_skip
 from parse_lib.models import Journal, Day, Event, MCHSDep, TouristGroups, FireDep, PoliceDep, Weather
 
 logging.basicConfig(
@@ -33,6 +33,8 @@ class V2Parser(DefaultParser):
         MCHS_DEP_TABLE_ID: 'mchs',
         WEATHER_TABLE_ID: 'temp',
     }
+
+    skipped_lines: int
 
     def read_file(self, file_path: str) -> Journal:
         logger.info(f'Start parsing file: {file_path}')
@@ -153,10 +155,14 @@ class V2Parser(DefaultParser):
         if not line:
             return False
 
+        if not enable_skip:
+            return False
+
         lower = line.lower()
 
         for word in skip_words:
             if word in lower:
+                self.skipped_lines += 1
                 return True
 
         return False

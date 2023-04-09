@@ -12,7 +12,7 @@ logging.basicConfig(
     format='%(levelname)s :: %(asctime)s :: %(message)s',
     datefmt='%Y-%m-%d %H:%M:%S'
 )
-logger = logging.getLogger('worker')
+logger = logging.getLogger('default_parser')
 
 
 class DefaultParser:
@@ -24,12 +24,15 @@ class DefaultParser:
     DEFAULT_NAME = 'default'
     FILE_FORMAT = 'docx'
 
+    skipped_lines: int
+
     def __init__(self, files_dir: str, file_path: str = ''):
         if not files_dir[-1] == '/':
             files_dir += '/'
 
         self.files_dir = files_dir
         self.file_path = file_path
+        self.skipped_lines = 0
 
     def get_files(self):
         self.files = []
@@ -62,6 +65,8 @@ class DefaultParser:
                 continue
 
             self.write_journal_to_db(journal)
+
+        logger.info(f'Skipped {self.skipped_lines} events')
 
     @abstractmethod
     def read_file(self, file_path: str) -> models.Journal:
