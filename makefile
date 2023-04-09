@@ -11,3 +11,6 @@ parse_v1:
 
 parse_v2:
 	python3 worker.py --parse v2 --files_dir=journals/v2/
+
+process:
+	python3 worker.py --process

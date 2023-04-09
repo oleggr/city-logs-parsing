@@ -15,6 +15,14 @@ class Event:
 
 
 @dataclass
+class EventFromDb(Event):
+    id: int = -1
+    version: str = 'default'
+    journal_id: int = -1
+    created_at: str = 'default'
+
+
+@dataclass
 class FireDep:
     fires_num: str = ''
     dead: str = ''
