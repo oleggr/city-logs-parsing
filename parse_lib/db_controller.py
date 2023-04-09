@@ -183,3 +183,15 @@ class DbController(DbQueriesMixin):
             conn.commit()
 
         conn.close()
+
+    def read_events(self):
+        conn = self._get_connection()
+        sql = """SELECT * from events;"""
+
+        cur = conn.cursor()
+        cur.execute(sql)
+        conn.commit()
+
+        rows = cur.fetchall()
+
+        return rows
