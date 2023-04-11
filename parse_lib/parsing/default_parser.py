@@ -5,6 +5,7 @@ import typing
 
 from parse_lib import models
 from parse_lib.db_controller import DbController
+from parse_lib.parsing.parsing_config import event_types, addresses
 
 
 logging.basicConfig(
@@ -33,6 +34,10 @@ class DefaultParser:
         self.files_dir = files_dir
         self.file_path = file_path
         self.skipped_lines = 0
+        self.db_controller = DbController()
+
+        self.parser_addresses = {}
+        self.get_addresses()
 
     def get_files(self):
         self.files = []
@@ -73,8 +78,7 @@ class DefaultParser:
         pass
 
     def write_journal_to_db(self, journal: models.Journal):
-        db = DbController()
-        db.write_journal(journal)
+        self.db_controller.write_journal(journal)
 
     def transform_date(self, date: str):
         """
@@ -99,3 +103,24 @@ class DefaultParser:
             year = '20' + year
 
         return f'{year}-{month}-{day}'
+
+    def get_addresses(self):
+        db_addresses = self.db_controller.get_addresses()
+
+        for addr in db_addresses:
+            self.parser_addresses[addr[1]] = addr[0]
+
+    def get_addresses_mappings(self, line: str):
+        if not line:
+            return False
+
+        mapping = []
+
+        lower = line.lower()
+
+        for word in self.parser_addresses:
+            if word in lower:
+                mapping.append(self.parser_addresses[word])
+
+        return mapping
+

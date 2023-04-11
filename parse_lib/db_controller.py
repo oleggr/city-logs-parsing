@@ -1,7 +1,17 @@
+import logging
 import typing
 import sqlite3
-from . import models
-from .db_queries import DbQueriesMixin
+from parse_lib import models
+from parse_lib.db_queries import DbQueriesMixin
+from parse_lib.parsing.parsing_config import event_types, addresses
+
+
+logging.basicConfig(
+    level=logging.DEBUG,
+    format='%(levelname)s :: %(asctime)s :: %(message)s',
+    datefmt='%Y-%m-%d %H:%M:%S'
+)
+logger = logging.getLogger('db_controller')
 
 
 class DbController(DbQueriesMixin):
@@ -13,6 +23,7 @@ class DbController(DbQueriesMixin):
             'database': self.db_filename
         }
         self._create_table()
+        self.write_addresses()
 
     def _get_connection(self):
         """Open connection"""
@@ -42,7 +53,7 @@ class DbController(DbQueriesMixin):
 
     def _write_journal(self, conn, journal: models.Journal):
         sql = """
-        INSERT OR REPLACE INTO journals (
+        INSERT INTO journals (
             `version`,
             `notes`,
             `duty_person`,
@@ -90,7 +101,29 @@ class DbController(DbQueriesMixin):
         cur.execute(sql, event_to_write)
         conn.commit()
 
-        return cur.lastrowid
+        event_id = cur.lastrowid
+
+        self._write_address_mapping_to_event(event_id, event.addr_mappings)
+
+        return event_id
+
+    def _write_address_mapping_to_event(self, event_id, mappings):
+        conn = self._get_connection()
+
+        if not mappings:
+            return
+
+        for mapping in mappings:
+            sql = """
+            INSERT INTO events_to_address_mappings (
+                `event_id`,
+                `address_id` 
+            ) VALUES (?,?);
+            """
+
+            cur = conn.cursor()
+            cur.execute(sql, (event_id, mapping))
+            conn.commit()
 
     def _create_table(self):
         conn = self._get_connection()
@@ -180,6 +213,24 @@ class DbController(DbQueriesMixin):
             """
             cur.execute(sql)
 
+            sql = """
+            CREATE TABLE IF NOT EXISTS addresses (
+                `address_id`                INTEGER PRIMARY KEY,
+                `address`                   TEXT,  
+                `created_at`                DATETIME DEFAULT current_timestamp
+            );
+            """
+            cur.execute(sql)
+
+            sql = """
+            CREATE TABLE IF NOT EXISTS events_to_address_mappings (
+                `event_id`                  INTEGER,
+                `address_id`                INTEGER,
+                `created_at`                DATETIME DEFAULT current_timestamp
+            );
+            """
+            cur.execute(sql)
+
             conn.commit()
 
         conn.close()
@@ -195,3 +246,37 @@ class DbController(DbQueriesMixin):
         rows = cur.fetchall()
 
         return rows
+
+    def get_addresses(self):
+        conn = self._get_connection()
+        sql = """SELECT * from addresses;"""
+
+        cur = conn.cursor()
+        cur.execute(sql)
+        conn.commit()
+
+        rows = cur.fetchall()
+
+        return rows
+
+    def write_addresses(self):
+        addresses_to_write = set()
+
+        for key in addresses:
+            addresses_to_write.add(addresses[key])
+
+        conn = self._get_connection()
+
+        if len(self.get_addresses()) > 0:
+            logger.warning('Addresses already in db. Skip writing.')
+
+        for address in addresses_to_write:
+            sql = f"""
+            INSERT INTO addresses (
+                `address`
+            ) VALUES ('{address}');
+            """
+
+            cur = conn.cursor()
+            cur.execute(sql)
+            conn.commit()

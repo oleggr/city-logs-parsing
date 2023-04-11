@@ -60,8 +60,14 @@ class V1Parser(DefaultParser):
                 )
                 line = self._prepare_line(match.end(), line)
 
+            addr_mappings = self.get_addresses_mappings(line)
+
             day.events.append(
-                Event(date=curr_date, text=line)
+                Event(
+                    date=curr_date,
+                    text=line,
+                    addr_mappings=addr_mappings
+                )
             )
 
         if not journal.days:

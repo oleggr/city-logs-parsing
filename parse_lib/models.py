@@ -12,6 +12,7 @@ class Event:
     datetime: str = ''
     organization: str = ''
     injured_fio: str = ''
+    addr_mappings: typing.List = None
 
 
 @dataclass

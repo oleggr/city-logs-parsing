@@ -95,6 +95,8 @@ class V2Parser(DefaultParser):
                         if self.need_to_skip(event_text):
                             continue
 
+                        addr_mappings = self.get_addresses_mappings(event_text)
+
                         day.events.append(Event(
                             date=day.date,
                             text=event_text,
@@ -102,6 +104,7 @@ class V2Parser(DefaultParser):
                             datetime=' '.join(datetime),
                             organization=text[2].strip(),
                             injured_fio=text[3].strip(),
+                            addr_mappings=addr_mappings,
                         ))
 
                     # resolve FireDep data from table
