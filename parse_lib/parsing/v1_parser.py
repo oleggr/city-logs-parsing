@@ -61,12 +61,14 @@ class V1Parser(DefaultParser):
                 line = self._prepare_line(match.end(), line)
 
             addr_mappings = self.get_addresses_mappings(line)
+            types_mappings = self.get_event_type_mappings(line)
 
             day.events.append(
                 Event(
                     date=curr_date,
                     text=line,
-                    addr_mappings=addr_mappings
+                    addr_mappings=addr_mappings,
+                    types_mappings=types_mappings,
                 )
             )
 

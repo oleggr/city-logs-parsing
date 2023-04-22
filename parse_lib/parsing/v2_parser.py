@@ -3,7 +3,7 @@ import logging
 import re
 
 from .default_parser import DefaultParser
-from .parsing_config import skip_words, enable_skip
+from parse_lib.parsing.parsing_config import skip_words, enable_skip
 from parse_lib.models import Journal, Day, Event, MCHSDep, TouristGroups, FireDep, PoliceDep, Weather
 
 logging.basicConfig(
@@ -96,6 +96,7 @@ class V2Parser(DefaultParser):
                             continue
 
                         addr_mappings = self.get_addresses_mappings(event_text)
+                        types_mappings = self.get_event_type_mappings(event_text)
 
                         day.events.append(Event(
                             date=day.date,
@@ -105,6 +106,7 @@ class V2Parser(DefaultParser):
                             organization=text[2].strip(),
                             injured_fio=text[3].strip(),
                             addr_mappings=addr_mappings,
+                            types_mappings=types_mappings,
                         ))
 
                     # resolve FireDep data from table

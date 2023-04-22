@@ -25,6 +25,7 @@ class DbController(DbQueriesMixin):
         }
         self._create_table()
         self.write_addresses()
+        self.write_event_types()
 
     def _get_connection(self):
         """Open connection"""
@@ -105,6 +106,7 @@ class DbController(DbQueriesMixin):
         event_id = cur.lastrowid
 
         self._write_address_mapping_to_event(event_id, event.addr_mappings)
+        self._write_event_types_mapping_to_event(event_id, event.types_mappings)
 
         return event_id
 
@@ -119,6 +121,24 @@ class DbController(DbQueriesMixin):
             INSERT INTO events_to_address_mappings (
                 `event_id`,
                 `address_id` 
+            ) VALUES (?,?);
+            """
+
+            cur = conn.cursor()
+            cur.execute(sql, (event_id, mapping))
+            conn.commit()
+
+    def _write_event_types_mapping_to_event(self, event_id, mappings):
+        conn = self._get_connection()
+
+        if not mappings:
+            return
+
+        for mapping in mappings:
+            sql = """
+            INSERT INTO events_to_event_types_mappings (
+                `event_id`,
+                `type_id` 
             ) VALUES (?,?);
             """
 
@@ -284,10 +304,11 @@ class DbController(DbQueriesMixin):
         for key in prsng_conf.addresses:
             addresses_to_write.add(prsng_conf.addresses[key])
 
-        conn = self._get_connection()
-
         if len(self.get_addresses()) > 0:
             logger.warning('Addresses already in db. Skip writing.')
+            return
+
+        conn = self._get_connection()
 
         for address in addresses_to_write:
             sql = f"""
@@ -316,12 +337,13 @@ class DbController(DbQueriesMixin):
         evet_types_to_write = set()
 
         for key in prsng_conf.event_types:
-            evet_types_to_write.add(prsng_conf.addresses[key])
-
-        conn = self._get_connection()
+            evet_types_to_write.add(prsng_conf.event_types[key])
 
         if len(self.get_event_types()) > 0:
             logger.warning('Event types already in db. Skip writing.')
+            return
+
+        conn = self._get_connection()
 
         for event_type in evet_types_to_write:
             sql = f"""

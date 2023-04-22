@@ -4,6 +4,7 @@ import os
 import typing
 
 from parse_lib import models
+from parse_lib.parsing.parsing_config import addresses, event_types
 from parse_lib.db_controller import DbController
 
 
@@ -36,8 +37,10 @@ class DefaultParser:
         self.db_controller = DbController()
 
         self.parser_addresses = {}
-        self.parser_event_types = {}
         self.get_addresses()
+
+        self.parser_event_types = {}
+        self.get_event_types()
 
     def get_files(self):
         self.files = []
@@ -110,12 +113,6 @@ class DefaultParser:
         for addr in db_addresses:
             self.parser_addresses[addr[1]] = addr[0]
 
-    def get_event_types(self):
-        db_event_types = self.db_controller.get_event_types()
-
-        for event_type in db_event_types:
-            self.parser_event_types[event_type[1]] = event_type[0]
-
     def get_addresses_mappings(self, line: str):
         if not line:
             return False
@@ -124,9 +121,30 @@ class DefaultParser:
 
         lower = line.lower()
 
-        for word in self.parser_addresses:
+        for word in addresses:
             if word in lower:
-                mapping.append(self.parser_addresses[word])
+                mapping.append(self.parser_addresses[addresses[word]])
 
         return mapping
 
+    def get_event_types(self):
+        db_event_types = self.db_controller.get_event_types()
+
+        for event_type in db_event_types:
+            self.parser_event_types[event_type[1]] = event_type[0]
+
+    def get_event_type_mappings(self, line: str):
+        if not line:
+            return False
+
+        mapping = []
+
+        lower = line.lower()
+
+        for word in event_types:
+            # print(word)
+            if word in lower:
+                # print('word in lower')
+                mapping.append(self.parser_event_types[event_types[word]])
+
+        return mapping

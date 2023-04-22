@@ -13,6 +13,7 @@ class Event:
     organization: str = ''
     injured_fio: str = ''
     addr_mappings: typing.List = None
+    types_mappings: typing.List = None
 
 
 @dataclass
