@@ -5,7 +5,6 @@ import typing
 
 from parse_lib import models
 from parse_lib.db_controller import DbController
-from parse_lib.parsing.parsing_config import event_types, addresses
 
 
 logging.basicConfig(
@@ -37,6 +36,7 @@ class DefaultParser:
         self.db_controller = DbController()
 
         self.parser_addresses = {}
+        self.parser_event_types = {}
         self.get_addresses()
 
     def get_files(self):
@@ -109,6 +109,12 @@ class DefaultParser:
 
         for addr in db_addresses:
             self.parser_addresses[addr[1]] = addr[0]
+
+    def get_event_types(self):
+        db_event_types = self.db_controller.get_event_types()
+
+        for event_type in db_event_types:
+            self.parser_event_types[event_type[1]] = event_type[0]
 
     def get_addresses_mappings(self, line: str):
         if not line:

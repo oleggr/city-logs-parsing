@@ -3,7 +3,8 @@ import typing
 import sqlite3
 from parse_lib import models
 from parse_lib.db_queries import DbQueriesMixin
-from parse_lib.parsing.parsing_config import event_types, addresses
+
+import parse_lib.parsing.parsing_config as prsng_conf
 
 
 logging.basicConfig(
@@ -231,6 +232,24 @@ class DbController(DbQueriesMixin):
             """
             cur.execute(sql)
 
+            sql = """
+            CREATE TABLE IF NOT EXISTS event_types (
+                `type_id`                   INTEGER PRIMARY KEY,
+                `type_name`                 TEXT,  
+                `created_at`                DATETIME DEFAULT current_timestamp
+            );
+            """
+            cur.execute(sql)
+
+            sql = """
+            CREATE TABLE IF NOT EXISTS events_to_event_types_mappings (
+                `event_id`                  INTEGER,
+                `type_id`                   INTEGER,
+                `created_at`                DATETIME DEFAULT current_timestamp
+            );
+            """
+            cur.execute(sql)
+
             conn.commit()
 
         conn.close()
@@ -262,8 +281,8 @@ class DbController(DbQueriesMixin):
     def write_addresses(self):
         addresses_to_write = set()
 
-        for key in addresses:
-            addresses_to_write.add(addresses[key])
+        for key in prsng_conf.addresses:
+            addresses_to_write.add(prsng_conf.addresses[key])
 
         conn = self._get_connection()
 
@@ -275,6 +294,40 @@ class DbController(DbQueriesMixin):
             INSERT INTO addresses (
                 `address`
             ) VALUES ('{address}');
+            """
+
+            cur = conn.cursor()
+            cur.execute(sql)
+            conn.commit()
+
+    def get_event_types(self):
+        conn = self._get_connection()
+        sql = """SELECT * from event_types;"""
+
+        cur = conn.cursor()
+        cur.execute(sql)
+        conn.commit()
+
+        rows = cur.fetchall()
+
+        return rows
+
+    def write_event_types(self):
+        evet_types_to_write = set()
+
+        for key in prsng_conf.event_types:
+            evet_types_to_write.add(prsng_conf.addresses[key])
+
+        conn = self._get_connection()
+
+        if len(self.get_event_types()) > 0:
+            logger.warning('Event types already in db. Skip writing.')
+
+        for event_type in evet_types_to_write:
+            sql = f"""
+            INSERT INTO event_types (
+                `type_name`
+            ) VALUES ('{event_type}');
             """
 
             cur = conn.cursor()
